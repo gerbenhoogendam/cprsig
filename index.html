@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Handtekening generator – Cooper Projectrealisatie</title>
+<style>
+  :root {
+    --bg: #f5f6f8; --card: #fff; --text: #1f2933; --muted: #6b7280;
+    --border: #d9dde3; --accent: #3f6a8c; --accent-text: #fff;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #16181c; --card: #202328; --text: #e8eaed; --muted: #9aa0a6;
+      --border: #3a3f47; --accent: #6f9bbd; --accent-text: #10151a;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 32px 16px; background: var(--bg); color: var(--text);
+    font: 15px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; }
+  main { max-width: 860px; margin: 0 auto; }
+  h1 { font-size: 22px; margin: 0 0 4px; }
+  p.lead { margin: 0 0 24px; color: var(--muted); }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 20px; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .grid .full { grid-column: 1 / -1; }
+  @media (max-width: 600px) { .grid { grid-template-columns: 1fr; } }
+  label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+  input { width: 100%; padding: 10px 12px; font: inherit; color: var(--text); background: transparent;
+    border: 1px solid var(--border); border-radius: 8px; }
+  input:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }
+  .bar h2 { font-size: 15px; margin: 0; }
+  .seg { display: inline-flex; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+  .seg button { border: 0; background: transparent; color: var(--text); padding: 6px 12px; font: inherit; font-size: 13px; cursor: pointer; }
+  .seg button[aria-pressed="true"] { background: var(--accent); color: var(--accent-text); }
+  .preview { border: 1px solid var(--border); border-radius: 8px; padding: 24px; overflow-x: auto; background: #fff; }
+  .preview.dark { background: #202124; }
+  #copy { width: 100%; padding: 14px; font: inherit; font-weight: 600; border: 0; border-radius: 10px;
+    background: var(--accent); color: var(--accent-text); cursor: pointer; }
+  #copy:disabled { opacity: .5; cursor: not-allowed; }
+  #status { min-height: 1.5em; margin: 10px 0 0; font-size: 14px; }
+  ol { margin: 8px 0 0; padding-left: 20px; color: var(--muted); font-size: 14px; }
+  .warn { color: #b45309; font-size: 13px; margin-top: 8px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Handtekening generator</h1>
+  <p class="lead">Vul je gegevens in, kopieer de handtekening en plak hem in Gmail.</p>
+
+  <section class="card">
+    <div class="grid">
+      <div><label for="voornaam">Voornaam</label><input id="voornaam" autocomplete="given-name" value="Max"></div>
+      <div><label for="achternaam">Achternaam</label><input id="achternaam" autocomplete="family-name" value="Coppens"></div>
+      <div class="full"><label for="functie">Functie</label><input id="functie" autocomplete="organization-title" value="Projectleider"></div>
+      <div><label for="email">E-mailadres</label><input id="email" type="email" autocomplete="email" value="m.coppens@cooper-project.nl"></div>
+      <div><label for="telefoon">Telefoonnummer</label><input id="telefoon" type="tel" autocomplete="tel" value="+31 6 24 91 10 27"></div>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="bar">
+      <h2>Voorbeeld</h2>
+      <div class="seg" role="group" aria-label="Achtergrond voorbeeld">
+        <button type="button" data-bg="light" aria-pressed="true">Licht</button>
+        <button type="button" data-bg="dark" aria-pressed="false">Donker</button>
+      </div>
+    </div>
+    <div class="preview" id="preview"></div>
+    <p class="warn" id="fileWarn" hidden>Je opent deze pagina lokaal (file://). De afbeeldingen komen dan niet mee naar Gmail. Open de gehoste versie.</p>
+  </section>
+
+  <section class="card">
+    <button id="copy" type="button">Kopieer handtekening</button>
+    <p id="status" role="status" aria-live="polite"></p>
+    <ol>
+      <li>Klik op <b>Kopieer handtekening</b>.</li>
+      <li>Open Gmail → tandwiel → <b>Alle instellingen weergeven</b> → tabblad <b>Algemeen</b> → <b>Handtekening</b>.</li>
+      <li>Maak een handtekening aan (of selecteer de bestaande), klik in het vak en plak met Ctrl+V / ⌘V.</li>
+      <li>Onderaan de pagina: <b>Wijzigingen opslaan</b>.</li>
+    </ol>
+  </section>
+</main>
+
+<script>
+// Vaste bedrijfsgegevens; pas hier aan.
+const COMPANY = {
+  name: 'Cooper Projectrealisatie B.V.',
+  website: 'www.cooper-project.nl',
+  address: 'Back-upstraat 12 | 1033 NX | Amsterdam',
+  legal: 'KVK: 52341356 | IBAN: NL05 RABO 0143 5252 39 | BTW: NL 8504 03 224 B01',
+};
+const COLOR = '#707070';       // middengrijs: leesbaar op wit én donker
+const LINE = '#9a9a9a';
+const FONT = 'Arial, Helvetica, sans-serif';
+// Logo-afmetingen in de handtekening (px). Bronbestand assets/logo.png moet minimaal 3x zo breed zijn.
+const LOGO_W = 150, LOGO_H = 60;
+const ICON = 16;
+
+const $ = id => document.getElementById(id);
+const esc = s => s.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const abs = p => new URL('assets/' + p, location.href).href;
+
+function row(icon, inner) {
+  return `<tr>
+    <td style="padding:0 10px 0 0;vertical-align:middle;width:${ICON}px;line-height:0;">
+      <img src="${abs('icon-' + icon + '.png')}" width="${ICON}" height="${ICON}" alt="" style="display:block;border:0;width:${ICON}px;height:${ICON}px;">
+    </td>
+    <td style="padding:5px 0;vertical-align:middle;font-family:${FONT};font-size:13px;line-height:18px;color:${COLOR};">${inner}</td>
+  </tr>`;
+}
+const link = (href, text) => `<a href="${esc(href)}" style="color:${COLOR};text-decoration:none;">${esc(text)}</a>`;
+
+function buildSignature() {
+  const first = $('voornaam').value.trim(), last = $('achternaam').value.trim();
+  const fn = $('functie').value.trim(), email = $('email').value.trim(), tel = $('telefoon').value.trim();
+  const fullName = [first, last].filter(Boolean).join(' ');
+
+  const head = [fullName, COMPANY.name].filter(Boolean).map(esc).join(' | ');
+  const rows = [];
+  if (tel) rows.push(row('phone', link('tel:' + tel.replace(/[^+\d]/g, ''), tel)));
+  // e-mail en website delen één regel, met eigen icoon voor het tweede deel
+  rows.push(`<tr>
+    <td style="padding:0 10px 0 0;vertical-align:middle;width:${ICON}px;line-height:0;"><img src="${abs('icon-mail.png')}" width="${ICON}" height="${ICON}" alt="" style="display:block;border:0;width:${ICON}px;height:${ICON}px;"></td>
+    <td style="padding:5px 0;vertical-align:middle;font-family:${FONT};font-size:13px;line-height:18px;color:${COLOR};white-space:nowrap;">${email ? link('mailto:' + email, email) + '&nbsp;&nbsp;|&nbsp;&nbsp;' : ''}<img src="${abs('icon-web.png')}" width="${ICON}" height="${ICON}" alt="" style="border:0;width:${ICON}px;height:${ICON}px;vertical-align:middle;margin-right:6px;">${link('https://' + COMPANY.website, COMPANY.website)}</td>
+  </tr>`);
+  rows.push(row('pin', esc(COMPANY.address)));
+  rows.push(row('home', esc(COMPANY.legal)));
+
+  return `<table cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;font-family:${FONT};">
+  <tr>
+    <td style="padding:8px 24px 8px 0;vertical-align:middle;border-right:1px dotted ${LINE};">
+      <img src="${abs('logo.png')}" width="${LOGO_W}" height="${LOGO_H}" alt="Cooper Projectrealisatie" style="display:block;border:0;width:${LOGO_W}px;height:${LOGO_H}px;">
+    </td>
+    <td style="padding:8px 0 8px 24px;vertical-align:middle;">
+      <table cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
+        <tr><td colspan="2" style="padding:0 0 ${fn ? 0 : 4}px;font-family:${FONT};font-size:14px;line-height:20px;font-weight:bold;color:${COLOR};">${head}</td></tr>
+        ${fn ? `<tr><td colspan="2" style="padding:0 0 4px;font-family:${FONT};font-size:13px;line-height:18px;color:${COLOR};">${esc(fn)}</td></tr>` : ''}
+        ${rows.join('\n')}
+      </table>
+    </td>
+  </tr>
+</table>`;
+}
+
+const preview = $('preview');
+function render() { preview.innerHTML = buildSignature(); }
+document.querySelectorAll('input').forEach(i => i.addEventListener('input', render));
+document.querySelectorAll('[data-bg]').forEach(b => b.addEventListener('click', () => {
+  document.querySelectorAll('[data-bg]').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+  preview.classList.toggle('dark', b.dataset.bg === 'dark');
+}));
+if (location.protocol === 'file:') $('fileWarn').hidden = false;
+
+const status = $('status');
+async function copy() {
+  const html = buildSignature();
+  const text = preview.innerText;
+  try {
+    if (navigator.clipboard && window.ClipboardItem) {
+      await navigator.clipboard.write([new ClipboardItem({
+        'text/html': new Blob([html], { type: 'text/html' }),
+        'text/plain': new Blob([text], { type: 'text/plain' }),
+      })]);
+    } else {
+      const r = document.createRange(); r.selectNode(preview);
+      const s = getSelection(); s.removeAllRanges(); s.addRange(r);
+      if (!document.execCommand('copy')) throw new Error('copy geweigerd');
+      s.removeAllRanges();
+    }
+    status.textContent = 'Gekopieerd. Plak hem nu in Gmail bij Instellingen → Handtekening.';
+  } catch (e) {
+    status.textContent = 'Kopiëren mislukt: ' + e.message + '. Selecteer het voorbeeld handmatig en kopieer met Ctrl+C / ⌘C.';
+  }
+}
+$('copy').addEventListener('click', copy);
+render();
+</script>
+</body>
+</html>
