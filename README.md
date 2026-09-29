@@ -7,4 +7,4 @@ Statische pagina: vul gegevens in, kopieer de handtekening, plak in Gmail.
 - `build-icons.mjs` – maakt de icoon-PNG's opnieuw (optioneel, vereist playwright)
 
 Bedrijfsgegevens en kleuren staan bovenin het `<script>` in `index.html`.
-Logo vervangen: `assets/logo.png` overschrijven (bij voorkeur minimaal 450 px breed).
+Logo vervangen: `assets/logo.png` overschrijven (nu 600 px breed, gerenderd uit de EPS).
