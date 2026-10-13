@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="nl">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Handtekening generator – Parrot Agency</title>
+<title>Signature generator – Parrot Agency</title>
 <style>
   :root {
     --bg: #f5f6f8; --card: #fff; --text: #1f2933; --muted: #6b7280;
@@ -48,39 +48,39 @@
 </head>
 <body>
 <main>
-  <h1>Handtekening generator – Parrot Agency</h1>
-  <p class="lead">Vul je gegevens in, kopieer de handtekening en plak hem in Gmail of Outlook.</p>
+  <h1>Signature generator – Parrot Agency</h1>
+  <p class="lead">Fill in your details, copy the signature and paste it into Gmail or Outlook.</p>
 
   <section class="card">
     <div class="grid">
-      <div><label for="voornaam">Voornaam</label><input id="voornaam" autocomplete="given-name" placeholder="Voornaam" required></div>
-      <div><label for="achternaam">Achternaam</label><input id="achternaam" autocomplete="family-name" placeholder="Achternaam" required></div>
-      <div class="full"><label for="functie">Functie</label><input id="functie" autocomplete="organization-title" placeholder="Functie" required></div>
-      <div><label for="email">E-mailadres</label><input id="email" type="email" autocomplete="email" placeholder="voornaam@parrotagency.com" required></div>
-      <div><label for="telefoon">Telefoonnummer <span style="font-weight:400;color:var(--muted)">(optioneel)</span></label><input id="telefoon" type="tel" autocomplete="tel" placeholder="+31 6 12 34 56 78"></div>
+      <div><label for="voornaam">First name</label><input id="voornaam" autocomplete="given-name" placeholder="First name" required></div>
+      <div><label for="achternaam">Last name</label><input id="achternaam" autocomplete="family-name" placeholder="Last name" required></div>
+      <div class="full"><label for="functie">Job title</label><input id="functie" autocomplete="organization-title" placeholder="Job title" required></div>
+      <div><label for="email">Email address</label><input id="email" type="email" autocomplete="email" placeholder="firstname@parrotagency.com" required></div>
+      <div><label for="telefoon">Phone number <span style="font-weight:400;color:var(--muted)">(optional)</span></label><input id="telefoon" type="tel" autocomplete="tel" placeholder="+31 6 12 34 56 78"></div>
     </div>
   </section>
 
   <section class="card">
     <div class="bar">
-      <h2>Voorbeeld</h2>
-      <div class="seg" role="group" aria-label="Achtergrond voorbeeld">
-        <button type="button" data-bg="light" aria-pressed="true">Licht</button>
-        <button type="button" data-bg="dark" aria-pressed="false" title="Simulatie van een mailapp die donkere tekst omzet naar licht">Donker (simulatie)</button>
+      <h2>Preview</h2>
+      <div class="seg" role="group" aria-label="Preview background">
+        <button type="button" data-bg="light" aria-pressed="true">Light</button>
+        <button type="button" data-bg="dark" aria-pressed="false" title="Simulation of a mail app that turns dark text light">Dark (simulation)</button>
       </div>
     </div>
     <div class="preview" id="preview"></div>
     <p class="warn" id="imgWarn" hidden></p>
-    <p class="warn" id="fileWarn" hidden>Je opent deze pagina lokaal (file://). De afbeeldingen komen dan niet mee naar Gmail. Open de gehoste versie.</p>
+    <p class="warn" id="fileWarn" hidden>You are opening this page locally (file://). The images will not carry over to Gmail or Outlook. Open the hosted version.</p>
   </section>
 
   <section class="card">
-    <button id="copy" type="button" disabled>Kopieer handtekening</button>
+    <button id="copy" type="button" disabled>Copy signature</button>
     <p id="status" role="status" aria-live="polite"></p>
     <ol>
-      <li>Klik op <b>Kopieer handtekening</b>.</li>
-      <li><b>Gmail:</b> tandwiel → <b>Alle instellingen weergeven</b> → tabblad <b>Algemeen</b> → <b>Handtekening</b>. Maak een handtekening aan (of selecteer de bestaande), klik in het vak en plak met Ctrl+V / ⌘V. Onderaan de pagina: <b>Wijzigingen opslaan</b>.</li>
-      <li><b>Outlook:</b> open de handtekeninginstellingen (Outlook op het web en nieuwe Outlook: Instellingen → <b>Accounts</b> → <b>Handtekeningen</b>; Outlook voor Windows: Bestand → Opties → E-mail → <b>Handtekeningen</b>; Outlook voor Mac: Outlook → Instellingen → <b>Handtekeningen</b>). Maak een nieuwe handtekening, klik in het vak, plak met Ctrl+V / ⌘V en sla op.</li>
+      <li>Click <b>Copy signature</b>.</li>
+      <li><b>Gmail:</b> gear icon → <b>See all settings</b> → <b>General</b> tab → <b>Signature</b>. Create a signature (or select the existing one), click in the box and paste with Ctrl+V / ⌘V. At the bottom of the page: <b>Save changes</b>.</li>
+      <li><b>Outlook:</b> open the signature settings (Outlook on the web and new Outlook: Settings → <b>Accounts</b> → <b>Signatures</b>; Outlook for Windows: File → Options → Mail → <b>Signatures</b>; Outlook for Mac: Outlook → Settings → <b>Signatures</b>). Create a new signature, click in the box, paste with Ctrl+V / ⌘V and save.</li>
     </ol>
   </section>
 </main>
@@ -105,7 +105,7 @@ const LOGO_FILE = 'logo-halo.png', LOGO_W = 116, LOGO_H = 29;
 const $ = id => document.getElementById(id);
 const esc = s => s.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const abs = p => new URL('assets/' + p, location.href).href;
-const link = (href, text) => `<a href="${esc(href)}">${esc(text)}</a>`;   // standaard linkstijl van de mailclient (blauw, onderstreept)
+const link = (href, text) => `<a href="${esc(href)}">${esc(text)}</a>`;   // default link style of the mail client (blue, underlined)
 
 // Nederlands nummer naar "+31 6 12 34 56 78". Onbekende/buitenlandse nummers blijven zoals ingetypt (opgeschoond).
 function formatPhone(raw) {
@@ -152,7 +152,7 @@ const preview = $('preview');
 function render() {
   preview.innerHTML = buildSignature(!isComplete());
   $('copy').disabled = !isComplete();
-  if (!isComplete()) status.textContent = 'Vul voornaam, achternaam, functie en e-mailadres in om te kopiëren. Het voorbeeld toont voorbeeldgegevens.';
+  if (!isComplete()) status.textContent = 'Fill in first name, last name, job title and email address to copy. The preview shows example data.';
   else if (status.dataset.state === 'hint') status.textContent = '';
 }
 document.querySelectorAll('input').forEach(i => i.addEventListener('input', () => { status.dataset.state = 'hint'; render(); }));
@@ -163,19 +163,19 @@ document.querySelectorAll('[data-bg]').forEach(b => b.addEventListener('click', 
 }));
 if (location.protocol === 'file:') $('fileWarn').hidden = false;
 
-// Controleer of het logo zonder inloggegevens bereikbaar is, zoals een mailprogramma het ophaalt.
-// (De browser onthoudt een wachtwoord en toont het logo in het voorbeeld daarom ook als het voor ontvangers niet laadt.)
+// Check that the logo is reachable without credentials, the way a mail client fetches it.
+// (The browser remembers a password, so the preview shows the logo even if it does not load for recipients.)
 (async function checkLogo() {
   const warn = t => { $('imgWarn').textContent = t; $('imgWarn').hidden = false; };
   if (location.protocol === 'http:' && !/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) {
-    warn('Deze pagina staat op http. Gmail en Outlook tonen afbeeldingen alleen via https; open de https-versie.');
+    warn('This page is served over http. Gmail and Outlook only show images over https; open the https version.');
   }
   if (location.protocol === 'file:') return;
   try {
     const r = await fetch(abs(LOGO_FILE), { credentials: 'omit', cache: 'no-store' });
-    if (!r.ok) warn('Let op: het logo is niet publiek bereikbaar (status ' + r.status + '). Ontvangers zien dan een kapot logo. Zorg dat de map assets/ zonder wachtwoord opent.');
+    if (!r.ok) warn('Warning: the logo is not publicly reachable (status ' + r.status + '). Recipients will see a broken logo. Make sure the assets/ folder opens without a password.');
   } catch (e) {
-    warn('Let op: het logo kon niet worden opgehaald (' + e.message + ').');
+    warn('Warning: the logo could not be fetched (' + e.message + ').');
   }
 })();
 
@@ -197,9 +197,9 @@ async function copy() {
       if (!document.execCommand('copy')) throw new Error('copy geweigerd');
       s.removeAllRanges();
     }
-    status.textContent = 'Gekopieerd. Plak hem nu in de handtekeninginstellingen van Gmail of Outlook.';
+    status.textContent = 'Copied. Now paste it into the signature settings of Gmail or Outlook.';
   } catch (e) {
-    status.textContent = 'Kopiëren mislukt: ' + e.message + '. Selecteer het voorbeeld handmatig en kopieer met Ctrl+C / ⌘C.';
+    status.textContent = 'Copy failed: ' + e.message + '. Select the preview manually and copy with Ctrl+C / ⌘C.';
   }
 }
 $('copy').addEventListener('click', copy);
