@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Handtekening generator – Parrot Agency</title>
+<style>
+  :root {
+    --bg: #f5f6f8; --card: #fff; --text: #1f2933; --muted: #6b7280;
+    --border: #d9dde3; --accent: #3f6a8c; --accent-text: #fff;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #16181c; --card: #202328; --text: #e8eaed; --muted: #9aa0a6;
+      --border: #3a3f47; --accent: #6f9bbd; --accent-text: #10151a;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 32px 16px; background: var(--bg); color: var(--text);
+    font: 15px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; }
+  main { max-width: 860px; margin: 0 auto; }
+  h1 { font-size: 22px; margin: 0 0 4px; }
+  p.lead { margin: 0 0 24px; color: var(--muted); }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 20px; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .grid .full { grid-column: 1 / -1; }
+  @media (max-width: 600px) { .grid { grid-template-columns: 1fr; } }
+  label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+  input { width: 100%; padding: 10px 12px; font: inherit; color: var(--text); background: transparent;
+    border: 1px solid var(--border); border-radius: 8px; }
+  input:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }
+  .bar h2 { font-size: 15px; margin: 0; }
+  .seg { display: inline-flex; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+  .seg button { border: 0; background: transparent; color: var(--text); padding: 6px 12px; font: inherit; font-size: 13px; cursor: pointer; }
+  .seg button[aria-pressed="true"] { background: var(--accent); color: var(--accent-text); }
+  .preview { border: 1px solid var(--border); border-radius: 8px; padding: 24px; overflow-x: auto; background: #fff; }
+  .preview.dark { background: #202124; }
+  #copy { width: 100%; padding: 14px; font: inherit; font-weight: 600; border: 0; border-radius: 10px;
+    background: var(--accent); color: var(--accent-text); cursor: pointer; }
+  #copy:disabled { opacity: .5; cursor: not-allowed; }
+  #status { min-height: 1.5em; margin: 10px 0 0; font-size: 14px; }
+  ol { margin: 8px 0 0; padding-left: 20px; color: var(--muted); font-size: 14px; }
+  .preview.dark td, .preview.dark a, .preview.dark span { color: #e8eaed !important; }
+  .preview.dark .muted { color: #9aa0a6 !important; }
+  .warn { color: #b45309; font-size: 13px; margin-top: 8px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Handtekening generator – Parrot Agency</h1>
+  <p class="lead">Vul je gegevens in, kopieer de handtekening en plak hem in Gmail.</p>
+
+  <section class="card">
+    <div class="grid">
+      <div><label for="voornaam">Voornaam</label><input id="voornaam" autocomplete="given-name" placeholder="Voornaam" required></div>
+      <div><label for="achternaam">Achternaam</label><input id="achternaam" autocomplete="family-name" placeholder="Achternaam" required></div>
+      <div class="full"><label for="functie">Functie</label><input id="functie" autocomplete="organization-title" placeholder="Functie" required></div>
+      <div><label for="email">E-mailadres</label><input id="email" type="email" autocomplete="email" placeholder="voornaam@parrotagency.com" required></div>
+      <div><label for="telefoon">Telefoonnummer <span style="font-weight:400;color:var(--muted)">(optioneel)</span></label><input id="telefoon" type="tel" autocomplete="tel" placeholder="+31 6 12 34 56 78"></div>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="bar">
+      <h2>Voorbeeld</h2>
+      <div class="seg" role="group" aria-label="Achtergrond voorbeeld">
+        <button type="button" data-bg="light" aria-pressed="true">Licht</button>
+        <button type="button" data-bg="dark" aria-pressed="false" title="Simulatie van een mailapp die donkere tekst omzet naar licht">Donker (simulatie)</button>
+      </div>
+    </div>
+    <div class="preview" id="preview"></div>
+    <p class="warn" id="fileWarn" hidden>Je opent deze pagina lokaal (file://). De afbeeldingen komen dan niet mee naar Gmail. Open de gehoste versie.</p>
+  </section>
+
+  <section class="card">
+    <button id="copy" type="button" disabled>Kopieer handtekening</button>
+    <p id="status" role="status" aria-live="polite"></p>
+    <ol>
+      <li>Klik op <b>Kopieer handtekening</b>.</li>
+      <li>Open Gmail → tandwiel → <b>Alle instellingen weergeven</b> → tabblad <b>Algemeen</b> → <b>Handtekening</b>.</li>
+      <li>Maak een handtekening aan (of selecteer de bestaande), klik in het vak en plak met Ctrl+V / ⌘V.</li>
+      <li>Onderaan de pagina: <b>Wijzigingen opslaan</b>.</li>
+    </ol>
+  </section>
+</main>
+
+<script>
+// Vaste bedrijfsgegevens; pas hier aan.
+const COMPANY = {
+  name: 'Parrot Agency',
+  website: 'www.parrotagency.com',
+  disclaimer: 'The contents of this e-mail originate from Parrot Agency and may include confidential information. This communication is intended exclusively for the addressed recipient. If you have received this message unintentionally, please inform the sender and permanently remove it, including any attachments. Any form of unauthorized access, distribution, reproduction, or use of this message is not permitted.',
+};
+const COLOR = '#222222';
+const MUTED = '#8a8a8a';
+const FONT = 'Arial, Helvetica, sans-serif';
+// Logo-variant: 'logo-halo.png' (zwart met dunne witte rand: leesbaar op licht én donker),
+// 'logo-black.png' (alleen licht) of 'logo-white.png' (alleen donker). Bestand is 828x205 (4x), getoond op 116x29.
+const LOGO_FILE = 'logo-halo.png', LOGO_W = 116, LOGO_H = 29;
+
+const $ = id => document.getElementById(id);
+const esc = s => s.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const abs = p => new URL('assets/' + p, location.href).href;
+const link = (href, text) => `<a href="${esc(href)}">${esc(text)}</a>`;   // standaard linkstijl van de mailclient (blauw, onderstreept)
+
+// Nederlands nummer naar "+31 6 12 34 56 78". Onbekende/buitenlandse nummers blijven zoals ingetypt (opgeschoond).
+function formatPhone(raw) {
+  let d = raw.replace(/[^\d+]/g, '');
+  if (d.startsWith('+')) d = '+' + d.slice(1).replace(/\+/g, ''); else d = d.replace(/\+/g, '');
+  d = d.replace(/^\+310/, '+31').replace(/^00310/, '+31');   // +31(0)6...
+  let nat = null;
+  if (/^(\+|00)31/.test(d)) nat = d.replace(/^(\+|00)31/, '');
+  else if (/^0\d/.test(d)) nat = d.slice(1);
+  else if (/^31\d{9}$/.test(d)) nat = d.slice(2);
+  if (nat === null || !/^\d{9}$/.test(nat)) return raw.trim().replace(/\s+/g, ' ');
+  const pairs = t => t.match(/\d{1,2}/g).join(' ');
+  if (nat[0] === '6') return '+31 6 ' + pairs(nat.slice(1));                       // mobiel
+  if (/^(1[03-5]|2[03-46]|3[0356]|38|4[0356]|5[0358]|7[0-9])/.test(nat)) return '+31 ' + nat.slice(0, 2) + ' ' + nat.slice(2, 5) + ' ' + pairs(nat.slice(5)); // netnummer 0xx (2 cijfers na de 0)
+  return '+31 ' + nat.slice(0, 3) + ' ' + pairs(nat.slice(3));                     // netnummer 0xxx (3 cijfers na de 0)
+}
+const validEmail = e => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
+const isComplete = () => ['voornaam', 'achternaam', 'functie'].every(id => $(id).value.trim()) && validEmail($('email').value.trim());
+
+// demo=true: lege velden vullen met de placeholder (alleen voor het voorbeeld, nooit voor kopiëren).
+function buildSignature(demo) {
+  const v = id => $(id).value.trim() || (demo ? $(id).placeholder : '');
+  const fullName = [v('voornaam'), v('achternaam')].filter(Boolean).join(' ');
+  const fn = v('functie'), email = v('email'), tel = v('telefoon') && formatPhone(v('telefoon'));
+  const td = (inner, extra = '') => `<tr><td style="font-family:${FONT};font-size:14px;line-height:22px;color:${COLOR};${extra}">${inner}</td></tr>`;
+
+  const lines = [];
+  lines.push(td(link('https://' + COMPANY.website, COMPANY.website)));
+  if (email) lines.push(td('E: ' + link('mailto:' + email, email)));
+  if (tel) lines.push(td('M: ' + link('tel:' + tel.replace(/[^+\d]/g, ''), tel)));
+
+  return `<table cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;font-family:${FONT};">
+  <tr><td style="padding:0 0 6px;line-height:0;"><img src="${abs(LOGO_FILE)}" width="${LOGO_W}" height="${LOGO_H}" alt="${esc(COMPANY.name)}" style="display:block;border:0;width:${LOGO_W}px;height:${LOGO_H}px;"></td></tr>
+  ${td('<b>' + esc(fullName) + ' | ' + esc(COMPANY.name) + '</b>')}
+  ${fn ? td(esc(fn)) : ''}
+  <tr><td style="height:14px;line-height:14px;font-size:14px;">&nbsp;</td></tr>
+  ${lines.join('\n  ')}
+  <tr><td style="padding:16px 0 0;max-width:560px;font-family:${FONT};font-size:12px;line-height:19px;color:${MUTED};"><span class="muted" style="color:${MUTED};">${esc(COMPANY.disclaimer)}</span></td></tr>
+</table>`;
+}
+
+const status = $('status');
+const preview = $('preview');
+function render() {
+  preview.innerHTML = buildSignature(!isComplete());
+  $('copy').disabled = !isComplete();
+  if (!isComplete()) status.textContent = 'Vul voornaam, achternaam, functie en e-mailadres in om te kopiëren. Het voorbeeld toont voorbeeldgegevens.';
+  else if (status.dataset.state === 'hint') status.textContent = '';
+}
+document.querySelectorAll('input').forEach(i => i.addEventListener('input', () => { status.dataset.state = 'hint'; render(); }));
+$('telefoon').addEventListener('blur', e => { if (e.target.value.trim()) { e.target.value = formatPhone(e.target.value); render(); } });
+document.querySelectorAll('[data-bg]').forEach(b => b.addEventListener('click', () => {
+  document.querySelectorAll('[data-bg]').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+  preview.classList.toggle('dark', b.dataset.bg === 'dark');
+}));
+if (location.protocol === 'file:') $('fileWarn').hidden = false;
+
+async function copy() {
+  if (!isComplete()) return;
+  $('telefoon').value = formatPhone($('telefoon').value);
+  render();                       // voorbeeld = exact wat gekopieerd wordt
+  const html = buildSignature(false);
+  const text = preview.innerText;
+  try {
+    if (navigator.clipboard && window.ClipboardItem) {
+      await navigator.clipboard.write([new ClipboardItem({
+        'text/html': new Blob([html], { type: 'text/html' }),
+        'text/plain': new Blob([text], { type: 'text/plain' }),
+      })]);
+    } else {
+      const r = document.createRange(); r.selectNode(preview);
+      const s = getSelection(); s.removeAllRanges(); s.addRange(r);
+      if (!document.execCommand('copy')) throw new Error('copy geweigerd');
+      s.removeAllRanges();
+    }
+    status.textContent = 'Gekopieerd. Plak hem nu in Gmail bij Instellingen → Handtekening.';
+  } catch (e) {
+    status.textContent = 'Kopiëren mislukt: ' + e.message + '. Selecteer het voorbeeld handmatig en kopieer met Ctrl+C / ⌘C.';
+  }
+}
+$('copy').addEventListener('click', copy);
+render();
+</script>
+</body>
+</html>
