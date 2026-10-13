@@ -95,10 +95,12 @@ const COMPANY = {
 const COLOR = '#222222';
 const MUTED = '#8a8a8a';
 const FONT = 'Arial, Helvetica, sans-serif';
-// Logo-variant (alle bestanden staan in assets/):
-//  'logo-block.png' (136x44 getoond, bestand 4x): wit logo in zwart blok; ziet er in licht én donker hetzelfde uit.
-//  'logo-halo.png' (116x29): zwart met dunne witte rand. 'logo-black.png' (alleen licht) en 'logo-white.png' (alleen donker): 116x29.
-const LOGO_FILE = 'logo-block.png', LOGO_W = 136, LOGO_H = 44;
+// Logo-variant (alle bestanden staan in assets/, 4x resolutie, getoond op 116x29 behalve het blok):
+//  'logo-halo.png'  zwart met dunne witte rand: op licht gelijk aan zwart, op donker leesbaar met een witte omlijning.
+//  'logo-grey.png'  middengrijs: redelijk leesbaar op licht en donker, maar niet het merkzwart.
+//  'logo-black.png' alleen goed op licht. 'logo-white.png' alleen goed op donker.
+//  'logo-block.png' wit logo in zwart blok (136x44): in beide modi gelijk, maar met blok.
+const LOGO_FILE = 'logo-halo.png', LOGO_W = 116, LOGO_H = 29;
 
 const $ = id => document.getElementById(id);
 const esc = s => s.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -136,7 +138,7 @@ function buildSignature(demo) {
   if (tel) lines.push(td('M: ' + link('tel:' + tel.replace(/[^+\d]/g, ''), tel)));
 
   return `<table cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;font-family:${FONT};">
-  <tr><td style="padding:0 0 12px;line-height:0;"><img src="${abs(LOGO_FILE)}" width="${LOGO_W}" height="${LOGO_H}" alt="${esc(COMPANY.name)}" style="display:block;border:0;width:${LOGO_W}px;height:${LOGO_H}px;"></td></tr>
+  <tr><td style="padding:0 0 8px;line-height:0;"><img src="${abs(LOGO_FILE)}" width="${LOGO_W}" height="${LOGO_H}" alt="${esc(COMPANY.name)}" style="display:block;border:0;width:${LOGO_W}px;height:${LOGO_H}px;"></td></tr>
   ${td('<b>' + esc(fullName) + ' | ' + esc(COMPANY.name) + '</b>')}
   ${fn ? td(esc(fn)) : ''}
   <tr><td style="height:14px;line-height:14px;font-size:14px;">&nbsp;</td></tr>
