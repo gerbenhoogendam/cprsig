@@ -68,6 +68,7 @@
       </div>
     </div>
     <div class="preview" id="preview"></div>
+    <p class="warn" id="imgWarn" hidden></p>
     <p class="warn" id="fileWarn" hidden>Je opent deze pagina lokaal (file://). De afbeeldingen komen dan niet mee naar Gmail. Open de gehoste versie.</p>
   </section>
 
@@ -177,6 +178,22 @@ document.querySelectorAll('[data-bg]').forEach(b => b.addEventListener('click', 
   preview.classList.toggle('dark', b.dataset.bg === 'dark');
 }));
 if (location.protocol === 'file:') $('fileWarn').hidden = false;
+
+// Controleer of het logo zonder inloggegevens bereikbaar is, zoals een mailprogramma het ophaalt.
+// (De browser onthoudt een wachtwoord en toont het logo in het voorbeeld daarom ook als het voor ontvangers niet laadt.)
+(async function checkLogo() {
+  const warn = t => { $('imgWarn').textContent = t; $('imgWarn').hidden = false; };
+  if (location.protocol === 'http:' && !/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) {
+    warn('Deze pagina staat op http. Gmail en Outlook tonen afbeeldingen alleen via https; open de https-versie.');
+  }
+  if (location.protocol === 'file:') return;
+  try {
+    const r = await fetch(abs('logo.png'), { credentials: 'omit', cache: 'no-store' });
+    if (!r.ok) warn('Let op: het logo is niet publiek bereikbaar (status ' + r.status + '). Ontvangers zien dan een kapot logo. Zorg dat de map assets/ zonder wachtwoord opent.');
+  } catch (e) {
+    warn('Let op: het logo kon niet worden opgehaald (' + e.message + ').');
+  }
+})();
 
 const status = $('status');
 async function copy() {
